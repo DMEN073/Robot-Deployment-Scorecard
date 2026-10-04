@@ -1,0 +1,567 @@
+{
+  "title": "Robot Deployment Scorecard",
+  "asOf": "2026-10-04",
+  "intro": "What a humanoid stack needs from research before it can be deployed, how far published work has got, and the measures that decide when each piece is good enough. Every metric is measured on the deployment hardware, on a named subtask, with the data budget stated.",
+  "scales": {
+    "maturity": [
+      "Open",
+      "Early",
+      "Partial",
+      "Near",
+      "Solved enough"
+    ],
+    "necessity": {
+      "1": "Later",
+      "2": "Needed",
+      "3": "Core"
+    }
+  },
+  "areas": [
+    {
+      "id": "force",
+      "name": "Force-aware manipulation",
+      "necessity": 3,
+      "maturity": 2,
+      "map": {
+        "x": 2,
+        "y": 2.95,
+        "labelLeft": false
+      },
+      "biggestGap": "Generalizing grip force across many objects before vision shows a cue",
+      "goal": "A model trained on force and vision together that knows how much force each object needs, split into normal, shear and torsion, and reacts before a visual cue appears.",
+      "evidence": [
+        {
+          "text": "Tactile-VLA reads normal and shear force and infers grip force for unseen objects; 80–100% success on fragile items against 0–50% for baselines, with 50–100 demos per task.",
+          "source": "https://arxiv.org/pdf/2507.09160"
+        },
+        {
+          "text": "τ uses gripper tactile sensing without force labels; 71.25% on four contact-rich tasks against 28.75% for π0.5 and 30% for ForceVLA, 100 demos per task, tested on unseen objects.",
+          "source": "https://arxiv.org/html/2607.24485v1"
+        },
+        {
+          "text": "TaF-VLA aligns tactile signals with a 6-axis force/torque reading inside π0.5; 22% higher average success on seven force-critical tasks.",
+          "source": "https://arxiv.org/html/2601.20321v1"
+        }
+      ],
+      "gaps": [
+        "Each paper covers 4–7 tasks on a single arm",
+        "No on-device control rate reported",
+        "No measure of acting before the visual cue",
+        "Threads, latches and snap-fits not covered; simulators cannot model them"
+      ],
+      "metrics": [
+        {
+          "metric": "Force split by direction",
+          "measure": "Normal, shear and torsion fed to the model as separate channels",
+          "target": "All three"
+        },
+        {
+          "metric": "Required-force prediction",
+          "measure": "Predicted grip force against the minimum that holds the object (lower until slip); N and %",
+          "target": "Report"
+        },
+        {
+          "metric": "Force before visual cue",
+          "measure": "Grip change against the first visible slip or deformation",
+          "target": "Action first"
+        },
+        {
+          "metric": "Unseen-object generalization",
+          "measure": "Held-out objects by material, stiffness, weight, friction, shape",
+          "target": "Small gap"
+        },
+        {
+          "metric": "Force-aware vs vision-only",
+          "measure": "Same demos, starts and subtask",
+          "target": "Force-aware higher"
+        },
+        {
+          "metric": "Contact reaction time (ms)",
+          "measure": "Contact onset per channel to first action change",
+          "target": "Faster than vision"
+        },
+        {
+          "metric": "Slip detection",
+          "measure": "From shear-to-normal ratio; rate and lead time",
+          "target": "Report"
+        },
+        {
+          "metric": "Torsion handling",
+          "measure": "Twist tasks; peak torsion against limit",
+          "target": "Within limit"
+        },
+        {
+          "metric": "Late-reaction events",
+          "measure": "Any force channel over limit before the model reacted",
+          "target": "0"
+        },
+        {
+          "metric": "Peak force per direction",
+          "measure": "Normal, shear and torsion against each limit",
+          "target": "Within limits"
+        },
+        {
+          "metric": "Damage rate",
+          "measure": "Crush or deformation events on fragile objects",
+          "target": "0"
+        },
+        {
+          "metric": "Over-grip margin (N)",
+          "measure": "Force above the minimum needed to hold",
+          "target": "Report"
+        },
+        {
+          "metric": "Force data coverage",
+          "measure": "Share of demos with force, real vs simulated",
+          "target": "Report"
+        },
+        {
+          "metric": "Sim-to-real force gap",
+          "measure": "Sim-trained force model tested on real held-out objects",
+          "target": "Report"
+        },
+        {
+          "metric": "Success at demo budget",
+          "measure": "Named subtask, realistic demo count, ≥20 trials",
+          "target": "≥ 80%"
+        },
+        {
+          "metric": "Success vs demonstrations",
+          "measure": "10, 25, 50, 100 demos",
+          "target": "Demos to 80%"
+        },
+        {
+          "metric": "Robustness",
+          "measure": "Lighting, position and distractor changes",
+          "target": "≤ 10 pt drop"
+        }
+      ]
+    },
+    {
+      "id": "edge",
+      "name": "Edge inference near 50 Hz",
+      "necessity": 3,
+      "maturity": 1,
+      "map": {
+        "x": 0.85,
+        "y": 3.2,
+        "labelLeft": false
+      },
+      "biggestGap": "Small fine-tunable models reacting at control rate on Jetson Thor",
+      "goal": "A small model that can be fine-tuned per subtask and reacts at about 50 Hz on Jetson Thor, so force readings change the action in time.",
+      "evidence": [
+        {
+          "text": "Community benchmark on Jetson Thor: π0.5 at 44 ms per inference (about 23 Hz); GR00T N1.6 at 41–45 ms. Not official NVIDIA figures.",
+          "source": "https://forums.developer.nvidia.com/t/real-time-inference-on-thor-rtx-pi0-5-gr00t-n1-6-1-7-thor-23-hz-rtx-5090-50-80hz/368788"
+        },
+        {
+          "text": "Jetson-PI runs π0.5 with asynchronous inference at 7.59 Hz control frequency and 131.8 ms reaction time on Thor.",
+          "source": "https://arxiv.org/html/2607.12659v3"
+        }
+      ],
+      "gaps": [
+        "No VLA shown reacting at 50 Hz on Thor",
+        "Action chunking can play actions at 50 Hz while the model only sees new force data at 10–20 Hz",
+        "Papers rarely report latency on the deployment device"
+      ],
+      "metrics": [
+        {
+          "metric": "Reaction rate (Hz)",
+          "measure": "How often new sensor data can change the action, on Thor",
+          "target": "≥ 50 Hz"
+        },
+        {
+          "metric": "Action output rate (Hz)",
+          "measure": "Actions sent per second over a 10-minute run",
+          "target": "≥ 50 Hz"
+        },
+        {
+          "metric": "Loop jitter",
+          "measure": "p50 and p99 loop time",
+          "target": "p99 ≤ 1.5× p50"
+        },
+        {
+          "metric": "End-to-end latency (ms)",
+          "measure": "Camera and force timestamp to command sent; p50, p95",
+          "target": "Set per subtask"
+        },
+        {
+          "metric": "Memory and power",
+          "measure": "Peak GB and sustained W on Thor",
+          "target": "Within budget"
+        },
+        {
+          "metric": "Fine-tuning cost",
+          "measure": "GPU-hours from data to validated checkpoint",
+          "target": "Report"
+        },
+        {
+          "metric": "Paired comparison",
+          "measure": "Against the current fine-tuned policy, same starts",
+          "target": "Not worse"
+        }
+      ]
+    },
+    {
+      "id": "workspace",
+      "name": "Workspace awareness",
+      "necessity": 3,
+      "maturity": 1,
+      "map": {
+        "x": 1.35,
+        "y": 2.65,
+        "labelLeft": false
+      },
+      "biggestGap": "Deciding where to stand and when to start a motion",
+      "goal": "The robot judges whether it can reach or see, moves closer when it cannot (for example to read a sign), and hands off cleanly between navigation, vision and manipulation.",
+      "evidence": [
+        {
+          "text": "Active Spatial Brain on Unitree G1: a VLM moves the neck and base and a solver computes the base adjustment to reach; 70–85% on easy and 55–70% on hard settings. VLMs struggle with fine metric judgment.",
+          "source": "https://arxiv.org/html/2605.21133v1"
+        },
+        {
+          "text": "HEAD on Unitree G1: navigation hands over to reaching on a fixed trigger (target in view and in range); 71% overall, 50% in a kitchen.",
+          "source": "https://arxiv.org/html/2508.03068v2"
+        }
+      ],
+      "gaps": [
+        "When to start a motion is still a hand-set rule",
+        "No work on moving closer to read a sign or label",
+        "Success drops sharply in cluttered or narrow spaces"
+      ],
+      "metrics": [
+        {
+          "metric": "Reachability judgment",
+          "measure": "Predicted vs actual reachable; precision and recall",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Approach pose quality",
+          "measure": "Subtask succeeds without repositioning",
+          "target": "≥ 85%"
+        },
+        {
+          "metric": "Reposition decision",
+          "measure": "Moves when out of reach instead of stretching or failing",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Stopping the approach",
+          "measure": "Distance from the best manipulation pose",
+          "target": "≤ 0.2 m"
+        },
+        {
+          "metric": "Motion timing",
+          "measure": "Motion start against first moment conditions held",
+          "target": "0 early starts"
+        },
+        {
+          "metric": "Skill transitions",
+          "measure": "Walk to reach, squat to stand, without stall or fall",
+          "target": "Report"
+        },
+        {
+          "metric": "Sign reading by moving closer",
+          "measure": "Walks until legible, then reads it correctly",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Using what it read",
+          "measure": "Read text changes the plan correctly",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Handoff success",
+          "measure": "Navigation to vision to manipulation, no person",
+          "target": "≥ 85%"
+        },
+        {
+          "metric": "Re-approach after failure",
+          "measure": "Repositions and retries after a failed grasp",
+          "target": "Report"
+        }
+      ]
+    },
+    {
+      "id": "nav",
+      "name": "Semantic map navigation",
+      "necessity": 2,
+      "maturity": 2,
+      "map": {
+        "x": 2.15,
+        "y": 2.25,
+        "labelLeft": false
+      },
+      "biggestGap": "Recognizing places from new viewpoints without metric SLAM",
+      "goal": "A relative, semantic map of rooms, objects and how places connect, with go-until-condition moves and lidar used only for collision avoidance.",
+      "evidence": [
+        {
+          "text": "Object-Path Graph on a Jetson wheeled robot: 91% node-transition success, 83% object query, 74–88% relocalization recall@1. It still uses odometry and RGB-D mapping.",
+          "source": "https://arxiv.org/html/2609.24189"
+        },
+        {
+          "text": "GPT-6 Astra reached 92% on RxR instruction following from a single RGB camera, but kept no map and searched inefficiently.",
+          "source": "https://arxiv.org/abs/2609.38537"
+        }
+      ],
+      "gaps": [
+        "Viewpoint changes still break place recognition",
+        "Not shown on humanoids",
+        "No system drops odometry entirely"
+      ],
+      "metrics": [
+        {
+          "metric": "Place recognition, top-1",
+          "measure": "≥3 headings, 2 lighting conditions",
+          "target": "≥ 95%"
+        },
+        {
+          "metric": "Wrong-merge rate",
+          "measure": "Distinct places merged into one node",
+          "target": "0 per run"
+        },
+        {
+          "metric": "Room classification",
+          "measure": "Smoothed over N frames",
+          "target": "≥ 95%"
+        },
+        {
+          "metric": "Object lookup",
+          "measure": "\"Go to the X\" reached",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Go-until-condition success",
+          "measure": "Walk until the stop condition fires",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Stop-position error",
+          "measure": "At normal walking speed",
+          "target": "≤ 0.3 m"
+        },
+        {
+          "metric": "Re-verification after change",
+          "measure": "Moved object found or reported missing",
+          "target": "≥ 85%"
+        },
+        {
+          "metric": "New-site exploration",
+          "measure": "Time and nodes before first goal reached",
+          "target": "Report"
+        }
+      ]
+    },
+    {
+      "id": "obstacle",
+      "name": "Clearing obstacles to shorten a path",
+      "necessity": 1,
+      "maturity": 1,
+      "map": {
+        "x": 0.8,
+        "y": 1.45,
+        "labelLeft": false
+      },
+      "biggestGap": "Deciding to move an object (a chair) instead of detouring",
+      "goal": "Use semantic cues to decide when moving an object aside beats a longer route, and refuse objects that must not be moved.",
+      "evidence": [
+        {
+          "text": "A 2026 study classifies obstacles as movable (87% precision) or fixed (81%) and pushes movable ones with an arm; 90% navigation success in a lab, with obstacle runs 19% slower than clear runs. Mobile robot, not a humanoid.",
+          "source": "https://link.springer.com/chapter/10.1007/978-3-032-10667-4_7"
+        }
+      ],
+      "gaps": [
+        "No humanoid work found",
+        "Pushing only; no grasp-and-place",
+        "No cost comparison against the detour"
+      ],
+      "metrics": [
+        {
+          "metric": "Clear-vs-detour decision",
+          "measure": "Against a hand-labelled answer",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Clearing success",
+          "measure": "Object moved and path completed",
+          "target": "≥ 85%"
+        },
+        {
+          "metric": "Time saved vs detour (s)",
+          "measure": "Same start and goal",
+          "target": "Report"
+        },
+        {
+          "metric": "Unsafe-move refusals",
+          "measure": "Fixed, heavy or fragile objects",
+          "target": "0 false moves"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "name": "Group conversation by audio",
+      "necessity": 1,
+      "maturity": 0,
+      "map": {
+        "x": 0.3,
+        "y": 0.95,
+        "labelLeft": false
+      },
+      "biggestGap": "Knowing who is speaking to the robot in a group",
+      "goal": "Follow who is speaking, respond only when addressed, and turn spoken instructions into the right subtask in site noise.",
+      "evidence": [
+        {
+          "text": "A 2026 expo field test kept speech recognition near 7% character error in heavy noise, but the authors say the system is not truly multi-party: addressee detection is unresolved and turn-taking used operator commands.",
+          "source": "https://arxiv.org/html/2609.00648"
+        }
+      ],
+      "gaps": [
+        "Addressee detection",
+        "Natural turn-taking in groups",
+        "Speech recognition fails when people turn away from the microphone"
+      ],
+      "metrics": [
+        {
+          "metric": "Speech recognition error",
+          "measure": "Site recordings at 1, 3, 5 m, per language",
+          "target": "Set per language"
+        },
+        {
+          "metric": "Diarization error",
+          "measure": "Multi-person recordings with overlap",
+          "target": "Report"
+        },
+        {
+          "metric": "Addressee detection",
+          "measure": "Was this said to the robot",
+          "target": "Precision ≥ 95%"
+        },
+        {
+          "metric": "Response latency (ms)",
+          "measure": "End of speech to response; p50, p95",
+          "target": "Set per task"
+        },
+        {
+          "metric": "Command grounding",
+          "measure": "Instruction to correct subtask",
+          "target": "≥ 90%"
+        },
+        {
+          "metric": "Compute share",
+          "measure": "Audio load while other modules run",
+          "target": "Within budget"
+        }
+      ]
+    },
+    {
+      "id": "wbc",
+      "name": "Whole-body control",
+      "necessity": 1,
+      "maturity": 3,
+      "map": {
+        "x": 3.3,
+        "y": 0.75,
+        "labelLeft": true
+      },
+      "biggestGap": "Edge cases only; motion triggering moved to workspace awareness",
+      "goal": "Treated as largely solved by imitation learning from RL policies. Checked for regressions and edge cases, not optimized.",
+      "evidence": [
+        {
+          "text": "Your assessment: imitation-trained controllers reproduce human motion well enough for deployment. This area was not re-checked against papers."
+        }
+      ],
+      "gaps": [
+        "Unusual, fast or heavy-contact motions outside the training data",
+        "Switching between skills"
+      ],
+      "metrics": [
+        {
+          "metric": "Task-set completion",
+          "measure": "Falls and aborts across deployed tasks",
+          "target": "0 falls"
+        },
+        {
+          "metric": "Unintended contacts",
+          "measure": "Self and environment, minimum clearance logged",
+          "target": "0 per task"
+        },
+        {
+          "metric": "Collision-check latency",
+          "measure": "Kinematics plus costmap per cycle; p50, p99",
+          "target": "Fits control period"
+        },
+        {
+          "metric": "Calibration and time sync",
+          "measure": "Pose error after use; joint-to-scan skew",
+          "target": "Report"
+        },
+        {
+          "metric": "Edge-case log",
+          "measure": "Slippery floor, payload change, narrow gap",
+          "target": "Report"
+        }
+      ]
+    }
+  ],
+  "systemMetrics": [
+    {
+      "metric": "Unattended subtask completion",
+      "measure": "Per named subtask, no human help, ≥20 trials",
+      "target": "≥ 80%"
+    },
+    {
+      "metric": "Failure breakdown",
+      "measure": "Perception, planning, control, force, timing, safety stop",
+      "target": "Report"
+    },
+    {
+      "metric": "Recovery from failure",
+      "measure": "Recovered without help, and time taken",
+      "target": "Report"
+    },
+    {
+      "metric": "Unintended contacts",
+      "measure": "Contacts and emergency stops per subtask",
+      "target": "0"
+    },
+    {
+      "metric": "Concurrent operation",
+      "measure": "All modules on Thor at once vs each alone",
+      "target": "Within 10%"
+    },
+    {
+      "metric": "Resource use",
+      "measure": "GPU, CPU and memory with everything running",
+      "target": "≥ 20% headroom"
+    },
+    {
+      "metric": "Power and thermal",
+      "measure": "Watts and throttling over repeated subtasks",
+      "target": "No throttling"
+    },
+    {
+      "metric": "New-task onboarding",
+      "measure": "First demo to validated checkpoint on the robot",
+      "target": "Report"
+    }
+  ],
+  "testProtocol": "Run each test with the model, code version, precision and power mode frozen; the same starts and seeds for every model compared; at least 20 trials per cell with a confidence interval; and every failure labelled by cause.",
+  "engineering": [
+    "Failure triggers: hand-written checks for known failure cases (empty grasp, object not where expected, force over limit, timeout)",
+    "Remote takeover when a check fires",
+    "Safety around people: slowing, keeping distance, yielding",
+    "Speed: tuned against ROI once a reasonable baseline exists from research, for example a subtask in about 2 seconds"
+  ],
+  "notYet": [
+    "Long-running operation (hours of uptime, failures per hour) until subtasks complete reliably",
+    "Simulation evaluation that predicts real results; rigid mechanical contact fidelity is not there yet",
+    "Learning-from-failure data loop tooling"
+  ],
+  "changelog": [
+    {
+      "date": "2026-10-04",
+      "change": "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."
+    }
+  ]
+}
