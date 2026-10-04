@@ -157,6 +157,10 @@
         {
           "text": "Jetson-PI runs π0.5 with asynchronous inference at 7.59 Hz control frequency and 131.8 ms reaction time on Thor.",
           "source": "https://arxiv.org/html/2607.12659v3"
+        },
+        {
+          "text": "EdgeDAE splits a tiny VLA across a Jetson Orin Nano (vision) and a Kria KR260 FPGA (diffusion action head): Octo-Small (27M) at 49.5 ms end to end (about 20 Hz) against 104.2 ms GPU-only; Octo-Base (93M) at 87.4 ms against 142.6 ms. Latency only; no robot runs or success rates. Preprint, not peer reviewed.",
+          "source": "https://arxiv.org/html/2610.00311"
         }
       ],
       "gaps": [
@@ -559,6 +563,10 @@
     "Learning-from-failure data loop tooling"
   ],
   "changelog": [
+    {
+      "date": "2026-10-04",
+      "change": "Edge inference: added EdgeDAE (Octo-Small at 49.5 ms, about 20 Hz, on Jetson Orin Nano plus FPGA). It shows even a 27M-parameter VLA stays well below 50 Hz on small edge hardware without extra accelerators; latency only, no closed-loop robot test, so maturity stays Early."
+    },
     {
       "date": "2026-10-04",
       "change": "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."
