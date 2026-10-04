@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Robot Deployment Scorecard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <style>
+        /* Layout: summary table and priority map first, then one panel per research area, then engineering and change log. */
+        :root {
+            --bg: #f3f5f6;
+            --surface: #ffffff;
+            --ink: #15202b;
+            --muted: #56636f;
+            --line: #d5dce1;
+            --accent: #1d5f7a;
+            --accent-soft: #e1edf2;
+            --open: #b4372b;
+            --early: #c9681c;
+            --partial: #a8840f;
+            --near: #3f8a4d;
+            --solved: #2a6b3a;
+            --focus-zone: #f6e9e3;
+            --display: "Archivo", "Arial Narrow", Arial, sans-serif;
+            --body: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+            --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #11171c;
+                --surface: #18212a;
+                --ink: #e4eaee;
+                --muted: #9aa8b3;
+                --line: #2c3943;
+                --accent: #6fb3d0;
+                --accent-soft: #1d3240;
+                --open: #e2675a;
+                --early: #e58c47;
+                --partial: #d4b13f;
+                --near: #6cbf7a;
+                --solved: #58ad6a;
+                --focus-zone: #2e2320;
+                color-scheme: dark
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #11171c;
+            --surface: #18212a;
+            --ink: #e4eaee;
+            --muted: #9aa8b3;
+            --line: #2c3943;
+            --accent: #6fb3d0;
+            --accent-soft: #1d3240;
+            --open: #e2675a;
+            --early: #e58c47;
+            --partial: #d4b13f;
+            --near: #6cbf7a;
+            --solved: #58ad6a;
+            --focus-zone: #2e2320;
+            color-scheme: dark
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--body);
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 32px 16px 64px
+        }
+
+        .wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--display);
+            font-stretch: 85%;
+            line-height: 1.15;
+            margin: 0;
+            text-wrap: balance
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 800
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700
+        }
+
+        h3 {
+            font-size: 19px;
+            font-weight: 700
+        }
+
+        p {
+            margin: 0
+        }
+
+        a {
+            color: var(--accent)
+        }
+
+        a:focus-visible,
+        summary:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px
+        }
+
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        .lead {
+            max-width: 68ch;
+            color: var(--muted)
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px
+        }
+
+        .scroll {
+            overflow-x: auto
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 15px
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top
+        }
+
+        th {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        td.num,
+        .mono {
+            font-family: var(--mono);
+            font-variant-numeric: tabular-nums
+        }
+
+        .chip {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid currentColor;
+            white-space: nowrap
+        }
+
+        .nec-core {
+            color: var(--accent)
+        }
+
+        .nec-needed {
+            color: var(--ink)
+        }
+
+        .nec-later {
+            color: var(--muted)
+        }
+
+        .meter {
+            display: flex;
+            gap: 3px;
+            align-items: center
+        }
+
+        .meter i {
+            display: block;
+            width: 18px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--line)
+        }
+
+        .meter span {
+            margin-left: 8px;
+            font-family: var(--mono);
+            font-size: 12px;
+            white-space: nowrap
+        }
+
+        .m0 i.on {
+            background: var(--open)
+        }
+
+        .m1 i.on {
+            background: var(--early)
+        }
+
+        .m2 i.on {
+            background: var(--partial)
+        }
+
+        .m3 i.on {
+            background: var(--near)
+        }
+
+        .m4 i.on {
+            background: var(--solved)
+        }
+
+        .map {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px
+        }
+
+        .map svg {
+            display: block;
+            width: 100%;
+            min-width: 560px;
+            height: auto
+        }
+
+        .areas {
+            display: flex;
+            flex-direction: column;
+            gap: 20px
+        }
+
+        .area {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border-left: 4px solid var(--line)
+        }
+
+        .area.m0 {
+            border-left-color: var(--open)
+        }
+
+        .area.m1 {
+            border-left-color: var(--early)
+        }
+
+        .area.m2 {
+            border-left-color: var(--partial)
+        }
+
+        .area.m3 {
+            border-left-color: var(--near)
+        }
+
+        .area-head {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 16px;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .area-head .tags {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .cols>div {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .cols h4 {
+            margin: 0;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        details {
+            border-top: 1px solid var(--line);
+            padding-top: 12px
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--accent)
+        }
+
+        details table {
+            margin-top: 10px
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .two>div {
+            min-width: 0;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .note {
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        @media (max-width:720px) {
+
+            .cols,
+            .two {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            * {
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <header>
+            <div class="eyebrow">Research status · reviewed <span id="asof"></span></div>
+            <h1>Robot Deployment Scorecard</h1>
+            <p class="lead">What a humanoid stack needs from research before it can be deployed, how far published work
+                has got, and the measures that decide when each piece is good enough. Every metric is measured on the
+                deployment hardware, on a named subtask, with the data budget stated.</p>
+        </header>
+
+        <section>
+            <h2>At a glance</h2>
+            <div class="scroll">
+                <table id="summary">
+                    <thead>
+                        <tr>
+                            <th>Area</th>
+                            <th>Necessity</th>
+                            <th>Research maturity</th>
+                            <th>Biggest gap</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>Where research effort pays off</h2>
+            <p class="note">Higher means more necessary for deployment; further right means more mature in published
+                work. The shaded corner holds what is needed and still unsolved.</p>
+            <div class="map scroll"><svg id="map" viewBox="0 0 660 340" role="img"
+                    aria-label="Priority map of research areas by necessity and maturity"></svg></div>
+        </section>
+
+        <section>
+            <h2>Research areas</h2>
+            <div class="areas" id="areas"></div>
+        </section>
+
+        <section>
+            <h2>Applies to every area</h2>
+            <div class="scroll">
+                <table id="system">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>How to measure</th>
+                            <th>Target</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <p class="note">Run each test with the model, code version, precision and power mode frozen; the same starts
+                and seeds for every model compared; at least 20 trials per cell with a confidence interval; and every
+                failure labelled by cause.</p>
+        </section>
+
+        <section class="two">
+            <div>
+                <h2>Handled by engineering</h2>
+                <p class="note">Needed for deployment, but no research paper is required.</p>
+                <ul id="eng"></ul>
+            </div>
+            <div>
+                <h2>Not a priority yet</h2>
+                <p class="note">Useful later, once subtasks complete reliably.</p>
+                <ul id="later"></ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Change log</h2>
+            <div class="scroll">
+                <table id="log">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Edit DATA to update the scorecard. maturity: 0 Open, 1 Early, 2 Partial, 3 Near, 4 Solved enough.
+        // necessity: 3 Core, 2 Needed, 1 Later. mapX/mapY nudge a dot on the priority map; labelLeft puts its label on the left.
+        const DATA = {
+            asOf: "4 Oct 2026",
+            areas: [
+                {
+                    id: "force", name: "Force-aware manipulation", necessity: 3, maturity: 2, mx: 2.0, my: 2.95,
+                    gap: "Generalizing grip force across many objects before vision shows a cue",
+                    goal: "A model trained on force and vision together that knows how much force each object needs, split into normal, shear and torsion, and reacts before a visual cue appears.",
+                    achieved: [
+                        ["Tactile-VLA reads normal and shear force and infers grip force for unseen objects; 80–100% success on fragile items against 0–50% for baselines, with 50–100 demos per task.", "https://arxiv.org/pdf/2507.09160"],
+                        ["τ uses gripper tactile sensing without force labels; 71.25% on four contact-rich tasks against 28.75% for π0.5 and 30% for ForceVLA, 100 demos per task, tested on unseen objects.", "https://arxiv.org/html/2607.24485v1"],
+                        ["TaF-VLA aligns tactile signals with a 6-axis force/torque reading inside π0.5; 22% higher average success on seven force-critical tasks.", "https://arxiv.org/html/2601.20321v1"]
+                    ],
+                    gaps: ["Each paper covers 4–7 tasks on a single arm", "No on-device control rate reported", "No measure of acting before the visual cue", "Threads, latches and snap-fits not covered; simulators cannot model them"],
+                    metrics: [
+                        ["Force split by direction", "Normal, shear and torsion fed to the model as separate channels", "All three"],
+                        ["Required-force prediction", "Predicted grip force against the minimum that holds the object (lower until slip); N and %", "Report"],
+                        ["Force before visual cue", "Grip change against the first visible slip or deformation", "Action first"],
+                        ["Unseen-object generalization", "Held-out objects by material, stiffness, weight, friction, shape", "Small gap"],
+                        ["Force-aware vs vision-only", "Same demos, starts and subtask", "Force-aware higher"],
+                        ["Contact reaction time (ms)", "Contact onset per channel to first action change", "Faster than vision"],
+                        ["Slip detection", "From shear-to-normal ratio; rate and lead time", "Report"],
+                        ["Torsion handling", "Twist tasks; peak torsion against limit", "Within limit"],
+                        ["Late-reaction events", "Any force channel over limit before the model reacted", "0"],
+                        ["Peak force per direction", "Normal, shear and torsion against each limit", "Within limits"],
+                        ["Damage rate", "Crush or deformation events on fragile objects", "0"],
+                        ["Over-grip margin (N)", "Force above the minimum needed to hold", "Report"],
+                        ["Force data coverage", "Share of demos with force, real vs simulated", "Report"],
+                        ["Sim-to-real force gap", "Sim-trained force model tested on real held-out objects", "Report"],
+                        ["Success at demo budget", "Named subtask, realistic demo count, ≥20 trials", "≥ 80%"],
+                        ["Success vs demonstrations", "10, 25, 50, 100 demos", "Demos to 80%"],
+                        ["Robustness", "Lighting, position and distractor changes", "≤ 10 pt drop"]
+                    ]
+                },
+                {
+                    id: "edge", name: "Edge inference near 50 Hz", necessity: 3, maturity: 1, mx: 0.85, my: 3.2,
+                    gap: "Small fine-tunable models reacting at control rate on Jetson Thor",
+                    goal: "A small model that can be fine-tuned per subtask and reacts at about 50 Hz on Jetson Thor, so force readings change the action in time.",
+                    achieved: [
+                        ["Community benchmark on Jetson Thor: π0.5 at 44 ms per inference (about 23 Hz); GR00T N1.6 at 41–45 ms. Not official NVIDIA figures.", "https://forums.developer.nvidia.com/t/real-time-inference-on-thor-rtx-pi0-5-gr00t-n1-6-1-7-thor-23-hz-rtx-5090-50-80hz/368788"],
+                        ["Jetson-PI runs π0.5 with asynchronous inference at 7.59 Hz control frequency and 131.8 ms reaction time on Thor.", "https://arxiv.org/html/2607.12659v3"]
+                    ],
+                    gaps: ["No VLA shown reacting at 50 Hz on Thor", "Action chunking can play actions at 50 Hz while the model only sees new force data at 10–20 Hz", "Papers rarely report latency on the deployment device"],
+                    metrics: [
+                        ["Reaction rate (Hz)", "How often new sensor data can change the action, on Thor", "≥ 50 Hz"],
+                        ["Action output rate (Hz)", "Actions sent per second over a 10-minute run", "≥ 50 Hz"],
+                        ["Loop jitter", "p50 and p99 loop time", "p99 ≤ 1.5× p50"],
+                        ["End-to-end latency (ms)", "Camera and force timestamp to command sent; p50, p95", "Set per subtask"],
+                        ["Memory and power", "Peak GB and sustained W on Thor", "Within budget"],
+                        ["Fine-tuning cost", "GPU-hours from data to validated checkpoint", "Report"],
+                        ["Paired comparison", "Against the current fine-tuned policy, same starts", "Not worse"]
+                    ]
+                },
+                {
+                    id: "workspace", name: "Workspace awareness", necessity: 3, maturity: 1, mx: 1.35, my: 2.65,
+                    gap: "Deciding where to stand and when to start a motion",
+                    goal: "The robot judges whether it can reach or see, moves closer when it cannot (for example to read a sign), and hands off cleanly between navigation, vision and manipulation.",
+                    achieved: [
+                        ["Active Spatial Brain on Unitree G1: a VLM moves the neck and base and a solver computes the base adjustment to reach; 70–85% on easy and 55–70% on hard settings. VLMs struggle with fine metric judgment.", "https://arxiv.org/html/2605.21133v1"],
+                        ["HEAD on Unitree G1: navigation hands over to reaching on a fixed trigger (target in view and in range); 71% overall, 50% in a kitchen.", "https://arxiv.org/html/2508.03068v2"]
+                    ],
+                    gaps: ["When to start a motion is still a hand-set rule", "No work on moving closer to read a sign or label", "Success drops sharply in cluttered or narrow spaces"],
+                    metrics: [
+                        ["Reachability judgment", "Predicted vs actual reachable; precision and recall", "≥ 90%"],
+                        ["Approach pose quality", "Subtask succeeds without repositioning", "≥ 85%"],
+                        ["Reposition decision", "Moves when out of reach instead of stretching or failing", "≥ 90%"],
+                        ["Stopping the approach", "Distance from the best manipulation pose", "≤ 0.2 m"],
+                        ["Motion timing", "Motion start against first moment conditions held", "0 early starts"],
+                        ["Skill transitions", "Walk to reach, squat to stand, without stall or fall", "Report"],
+                        ["Sign reading by moving closer", "Walks until legible, then reads it correctly", "≥ 90%"],
+                        ["Using what it read", "Read text changes the plan correctly", "≥ 90%"],
+                        ["Handoff success", "Navigation to vision to manipulation, no person", "≥ 85%"],
+                        ["Re-approach after failure", "Repositions and retries after a failed grasp", "Report"]
+                    ]
+                },
+                {
+                    id: "nav", name: "Semantic map navigation", necessity: 2, maturity: 2, mx: 2.15, my: 2.25,
+                    gap: "Recognizing places from new viewpoints without metric SLAM",
+                    goal: "A relative, semantic map of rooms, objects and how places connect, with go-until-condition moves and lidar used only for collision avoidance.",
+                    achieved: [
+                        ["Object-Path Graph on a Jetson wheeled robot: 91% node-transition success, 83% object query, 74–88% relocalization recall@1. It still uses odometry and RGB-D mapping.", "https://arxiv.org/html/2609.24189"],
+                        ["GPT-6 Astra reached 92% on RxR instruction following from a single RGB camera, but kept no map and searched inefficiently.", "https://arxiv.org/abs/2609.38537"]
+                    ],
+                    gaps: ["Viewpoint changes still break place recognition", "Not shown on humanoids", "No system drops odometry entirely"],
+                    metrics: [
+                        ["Place recognition, top-1", "≥3 headings, 2 lighting conditions", "≥ 95%"],
+                        ["Wrong-merge rate", "Distinct places merged into one node", "0 per run"],
+                        ["Room classification", "Smoothed over N frames", "≥ 95%"],
+                        ["Object lookup", "\"Go to the X\" reached", "≥ 90%"],
+                        ["Go-until-condition success", "Walk until the stop condition fires", "≥ 90%"],
+                        ["Stop-position error", "At normal walking speed", "≤ 0.3 m"],
+                        ["Re-verification after change", "Moved object found or reported missing", "≥ 85%"],
+                        ["New-site exploration", "Time and nodes before first goal reached", "Report"]
+                    ]
+                },
+                {
+                    id: "obstacle", name: "Clearing obstacles to shorten a path", necessity: 1, maturity: 1, mx: 0.8, my: 1.45,
+                    gap: "Deciding to move an object (a chair) instead of detouring",
+                    goal: "Use semantic cues to decide when moving an object aside beats a longer route, and refuse objects that must not be moved.",
+                    achieved: [
+                        ["A 2026 study classifies obstacles as movable (87% precision) or fixed (81%) and pushes movable ones with an arm; 90% navigation success in a lab, with obstacle runs 19% slower than clear runs. Mobile robot, not a humanoid.", "https://link.springer.com/chapter/10.1007/978-3-032-10667-4_7"]
+                    ],
+                    gaps: ["No humanoid work found", "Pushing only; no grasp-and-place", "No cost comparison against the detour"],
+                    metrics: [
+                        ["Clear-vs-detour decision", "Against a hand-labelled answer", "≥ 90%"],
+                        ["Clearing success", "Object moved and path completed", "≥ 85%"],
+                        ["Time saved vs detour (s)", "Same start and goal", "Report"],
+                        ["Unsafe-move refusals", "Fixed, heavy or fragile objects", "0 false moves"]
+                    ]
+                },
+                {
+                    id: "audio", name: "Group conversation by audio", necessity: 1, maturity: 0, mx: 0.3, my: 0.95,
+                    gap: "Knowing who is speaking to the robot in a group",
+                    goal: "Follow who is speaking, respond only when addressed, and turn spoken instructions into the right subtask in site noise.",
+                    achieved: [
+                        ["A 2026 expo field test kept speech recognition near 7% character error in heavy noise, but the authors say the system is not truly multi-party: addressee detection is unresolved and turn-taking used operator commands.", "https://arxiv.org/html/2609.00648"]
+                    ],
+                    gaps: ["Addressee detection", "Natural turn-taking in groups", "Speech recognition fails when people turn away from the microphone"],
+                    metrics: [
+                        ["Speech recognition error", "Site recordings at 1, 3, 5 m, per language", "Set per language"],
+                        ["Diarization error", "Multi-person recordings with overlap", "Report"],
+                        ["Addressee detection", "Was this said to the robot", "Precision ≥ 95%"],
+                        ["Response latency (ms)", "End of speech to response; p50, p95", "Set per task"],
+                        ["Command grounding", "Instruction to correct subtask", "≥ 90%"],
+                        ["Compute share", "Audio load while other modules run", "Within budget"]
+                    ]
+                },
+                {
+                    id: "wbc", name: "Whole-body control", necessity: 1, maturity: 3, mx: 3.3, my: 0.75, labelLeft: true,
+                    gap: "Edge cases only; motion triggering moved to workspace awareness",
+                    goal: "Treated as largely solved by imitation learning from RL policies. Checked for regressions and edge cases, not optimized.",
+                    achieved: [
+                        ["Your assessment: imitation-trained controllers reproduce human motion well enough for deployment. This area was not re-checked against papers."]
+                    ],
+                    gaps: ["Unusual, fast or heavy-contact motions outside the training data", "Switching between skills"],
+                    metrics: [
+                        ["Task-set completion", "Falls and aborts across deployed tasks", "0 falls"],
+                        ["Unintended contacts", "Self and environment, minimum clearance logged", "0 per task"],
+                        ["Collision-check latency", "Kinematics plus costmap per cycle; p50, p99", "Fits control period"],
+                        ["Calibration and time sync", "Pose error after use; joint-to-scan skew", "Report"],
+                        ["Edge-case log", "Slippery floor, payload change, narrow gap", "Report"]
+                    ]
+                }
+            ],
+            system: [
+                ["Unattended subtask completion", "Per named subtask, no human help, ≥20 trials", "≥ 80%"],
+                ["Failure breakdown", "Perception, planning, control, force, timing, safety stop", "Report"],
+                ["Recovery from failure", "Recovered without help, and time taken", "Report"],
+                ["Unintended contacts", "Contacts and emergency stops per subtask", "0"],
+                ["Concurrent operation", "All modules on Thor at once vs each alone", "Within 10%"],
+                ["Resource use", "GPU, CPU and memory with everything running", "≥ 20% headroom"],
+                ["Power and thermal", "Watts and throttling over repeated subtasks", "No throttling"],
+                ["New-task onboarding", "First demo to validated checkpoint on the robot", "Report"]
+            ],
+            engineering: [
+                "Failure triggers: hand-written checks for known failure cases (empty grasp, object not where expected, force over limit, timeout)",
+                "Remote takeover when a check fires",
+                "Safety around people: slowing, keeping distance, yielding",
+                "Speed: tuned against ROI once a reasonable baseline exists from research, for example a subtask in about 2 seconds"
+            ],
+            later: [
+                "Long-running operation (hours of uptime, failures per hour) until subtasks complete reliably",
+                "Simulation evaluation that predicts real results; rigid mechanical contact fidelity is not there yet",
+                "Learning-from-failure data loop tooling"
+            ],
+            log: [
+                ["4 Oct 2026", "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."]
+            ]
+        };
+
+        const MAT = ["Open", "Early", "Partial", "Near", "Solved enough"];
+        const NEC = { 3: ["Core", "nec-core"], 2: ["Needed", "nec-needed"], 1: ["Later", "nec-later"] };
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const meter = m => `<div class="meter m${m}" aria-label="Maturity: ${MAT[m]}">${[0, 1, 2, 3, 4].map(i => `<i class="${i <= m ? "on" : ""}"></i>`).join("")}<span>${MAT[m]}</span></div>`;
+        const chip = n => `<span class="chip ${NEC[n][1]}">${NEC[n][0]}</span>`;
+        const rows = list => list.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="num">${esc(r[2])}</td></tr>`).join("");
+
+        document.getElementById("asof").textContent = DATA.asOf;
+        const sorted = [...DATA.areas].sort((a, b) => b.necessity - a.necessity || a.maturity - b.maturity);
+
+        document.querySelector("#summary tbody").innerHTML = sorted.map(a =>
+            `<tr><td><a href="#${a.id}">${esc(a.name)}</a></td><td>${chip(a.necessity)}</td><td>${meter(a.maturity)}</td><td>${esc(a.gap)}</td></tr>`).join("");
+
+        document.getElementById("areas").innerHTML = sorted.map(a => `
+  <article class="area m${a.maturity}" id="${a.id}">
+    <div class="area-head"><h3>${esc(a.name)}</h3><div class="tags">${chip(a.necessity)}${meter(a.maturity)}</div></div>
+    <p>${esc(a.goal)}</p>
+    <div class="cols">
+      <div><h4>Shown so far</h4><ul>${a.achieved.map(e => `<li>${esc(e[0])}${e[1] ? ` <a href="${e[1]}" target="_blank" rel="noopener">Source</a>` : ""}</li>`).join("")}</ul></div>
+      <div><h4>Still missing</h4><ul>${a.gaps.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>
+    </div>
+    <details><summary>Scorecard metrics (${a.metrics.length})</summary>
+      <div class="scroll"><table><thead><tr><th>Metric</th><th>How to measure</th><th>Target</th></tr></thead><tbody>${rows(a.metrics)}</tbody></table></div>
+    </details>
+  </article>`).join("");
+
+        document.querySelector("#system tbody").innerHTML = rows(DATA.system);
+        document.getElementById("eng").innerHTML = DATA.engineering.map(t => `<li>${esc(t)}</li>`).join("");
+        document.getElementById("later").innerHTML = DATA.later.map(t => `<li>${esc(t)}</li>`).join("");
+        document.querySelector("#log tbody").innerHTML = DATA.log.map(r => `<tr><td class="num">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("");
+
+        // Priority map: x = maturity 0..4, y = necessity 0.5..3.3
+        (function () {
+            const L = 90, R = 620, T = 24, B = 290, X = m => L + m * (R - L) / 4, Y = n => B - (n - 0.5) * (B - T) / 2.8;
+            const colors = ["--open", "--early", "--partial", "--near", "--solved"];
+            let s = `<rect x="${L}" y="${T}" width="${X(2) - L}" height="${Y(2) - T}" fill="var(--focus-zone)"/>`;
+            s += `<text x="${L + 8}" y="${T + 16}" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">FOCUS HERE</text>`;
+            MAT.forEach((t, i) => {
+                const x = X(i);
+                s += `<line x1="${x}" y1="${T}" x2="${x}" y2="${B}" stroke="var(--line)" stroke-width="1"/>`;
+                s += `<text x="${x}" y="${B + 20}" text-anchor="${i === 0 ? "start" : i === 4 ? "end" : "middle"}" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${t}</text>`;
+            });
+            [[3, "Core"], [2, "Needed"], [1, "Later"]].forEach(([n, t]) => {
+                const y = Y(n);
+                s += `<line x1="${L}" y1="${y}" x2="${R}" y2="${y}" stroke="var(--line)" stroke-dasharray="3 4" stroke-width="1"/>`;
+                s += `<text x="${L - 10}" y="${y + 4}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${t}</text>`;
+            });
+            s += `<text x="${(L + R) / 2}" y="${B + 40}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">RESEARCH MATURITY →</text>`;
+            DATA.areas.forEach(a => {
+                const x = X(a.mx), y = Y(a.my), c = `var(${colors[a.maturity]})`;
+                s += `<a href="#${a.id}"><circle cx="${x}" cy="${y}" r="7" fill="${c}" stroke="var(--surface)" stroke-width="2"/>`;
+                s += `<text x="${a.labelLeft ? x - 12 : x + 12}" y="${y + 4}" text-anchor="${a.labelLeft ? "end" : "start"}" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="600" fill="var(--ink)">${esc(a.name)}</text></a>`;
+            });
+            document.getElementById("map").innerHTML = s;
+        })();
+    </script>
+</body>
+
+</html>
