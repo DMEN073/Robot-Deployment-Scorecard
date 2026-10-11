@@ -1,6 +1,6 @@
 {
   "title": "Robot Deployment Scorecard",
-  "asOf": "2026-10-04",
+  "asOf": "2026-10-11",
   "intro": "What a humanoid stack needs from research before it can be deployed, how far published work has got, and the measures that decide when each piece is good enough. Every metric is measured on the deployment hardware, on a named subtask, with the data budget stated.",
   "scales": {
     "maturity": [
@@ -41,11 +41,15 @@
         {
           "text": "TaF-VLA aligns tactile signals with a 6-axis force/torque reading inside π0.5; 22% higher average success on seven force-critical tasks.",
           "source": "https://arxiv.org/html/2601.20321v1"
+        },
+        {
+          "text": "SAFE (preprint) detects slip and fracture from two passive acoustic (PVDF) sensors plus motor proprioception on a compliant gripper, with the grasp controller at 104 Hz on a Jetson Orin Nano; Alert-F1 0.884, 91.3% success over 46 robot trials and 82.4% on unseen objects, while fixed-force baselines drop to 0% on mismatched objects. No force channels and not a VLA.",
+          "source": "https://arxiv.org/abs/2610.08802"
         }
       ],
       "gaps": [
         "Each paper covers 4–7 tasks on a single arm",
-        "No on-device control rate reported",
+        "No on-device control rate reported for a force-aware VLA; only a non-VLA slip classifier and controller (104 Hz, Orin Nano)",
         "No measure of acting before the visual cue",
         "Threads, latches and snap-fits not covered; simulators cannot model them"
       ],
@@ -157,6 +161,10 @@
         {
           "text": "Jetson-PI runs π0.5 with asynchronous inference at 7.59 Hz control frequency and 131.8 ms reaction time on Thor.",
           "source": "https://arxiv.org/html/2607.12659v3"
+        },
+        {
+          "text": "REACT (CoRL 2026, preprint) keeps a rolling denoising buffer for π0.5 on two bimanual arms (ARX X5, Franka); 64.8% against 58.7% for plain chunking and 17.7% for async+RTC over 6 real tasks, 30 trials each, same platforms. On an RTX 4090, not edge hardware: actions go out at 30 Hz but new observations reach the model at only 3 Hz (233 ms average embedding age).",
+          "source": "https://react-vla.github.io/"
         }
       ],
       "gaps": [
@@ -559,6 +567,18 @@
     "Learning-from-failure data loop tooling"
   ],
   "changelog": [
+    {
+      "date": "2026-10-11",
+      "change": "Force: added SAFE (arXiv 2610.08802), acoustic slip and fracture detection at 104 Hz on Jetson Orin Nano with 82.4% success on unseen objects. Maturity unchanged: no force channels, not a learned VLA."
+    },
+    {
+      "date": "2026-10-11",
+      "change": "Force: narrowed the on-device rate gap, since SAFE reports an on-device rate for a non-VLA slip classifier and controller but no force-aware VLA has one yet."
+    },
+    {
+      "date": "2026-10-11",
+      "change": "Edge: added REACT (arXiv 2610.12007), real-robot paired comparison of π0.5 inference schemes showing 30 Hz action output but only 3 Hz observation intake on an RTX 4090. Maturity unchanged: not measured on edge hardware."
+    },
     {
       "date": "2026-10-04",
       "change": "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."
