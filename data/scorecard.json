@@ -1,6 +1,6 @@
 {
   "title": "Robot Deployment Scorecard",
-  "asOf": "2026-10-04",
+  "asOf": "2026-11-08",
   "intro": "What a humanoid stack needs from research before it can be deployed, how far published work has got, and the measures that decide when each piece is good enough. Every metric is measured on the deployment hardware, on a named subtask, with the data budget stated.",
   "scales": {
     "maturity": [
@@ -222,12 +222,17 @@
         {
           "text": "HEAD on Unitree G1: navigation hands over to reaching on a fixed trigger (target in view and in range); 71% overall, 50% in a kitchen.",
           "source": "https://arxiv.org/html/2508.03068v2"
+        },
+        {
+          "text": "HuG on Unitree G1 (CoRL 2026, preprint): active head picks a viewpoint to resolve occlusion, then squat, bend and lean repositioning for a whole-body grasp; trained in simulation with zero real demos. 87.5% on a shelf task (40 trials, 10 YCB objects, 85% on unseen ones) against 52.5% for the best baseline and 32.5% for ACT on the same setup; 84–85% over 150 trials at 5 table heights. No stepping, and inference runs off-board on an RTX 5090.",
+          "source": "https://arxiv.org/pdf/2611.01659"
         }
       ],
       "gaps": [
         "When to start a motion is still a hand-set rule",
         "No work on moving closer to read a sign or label",
-        "Success drops sharply in cluttered or narrow spaces"
+        "Success drops sharply in cluttered or narrow spaces",
+        "Repositioning without stepping only: HuG adjusts posture (squat, lean) but the base does not move, and its viewpoint search takes about 8 s"
       ],
       "metrics": [
         {
@@ -559,6 +564,14 @@
     "Learning-from-failure data loop tooling"
   ],
   "changelog": [
+    {
+      "date": "2026-11-08",
+      "change": "Workspace awareness: added HuG (arXiv 2611.01659), real G1 active-perception grasping with paired hardware baselines and unseen objects. Maturity unchanged (Early): no base stepping and off-board inference."
+    },
+    {
+      "date": "2026-11-08",
+      "change": "Workspace awareness: added gap that repositioning is shown only through posture, not stepping, with a slow (~8 s) viewpoint search."
+    },
     {
       "date": "2026-10-04",
       "change": "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."
