@@ -1,6 +1,6 @@
 {
   "title": "Robot Deployment Scorecard",
-  "asOf": "2026-10-04",
+  "asOf": "2026-11-15",
   "intro": "What a humanoid stack needs from research before it can be deployed, how far published work has got, and the measures that decide when each piece is good enough. Every metric is measured on the deployment hardware, on a named subtask, with the data budget stated.",
   "scales": {
     "maturity": [
@@ -157,12 +157,17 @@
         {
           "text": "Jetson-PI runs π0.5 with asynchronous inference at 7.59 Hz control frequency and 131.8 ms reaction time on Thor.",
           "source": "https://arxiv.org/html/2607.12659v3"
+        },
+        {
+          "text": "GR00T 2 Turbo (NVIDIA whitepaper, Nov 2026, not peer reviewed): 124 ms per prediction on the Unitree G1 onboard Jetson AGX Thor (120 W mode, TensorRT with FP8 on selected layers) against 38 ms on an RTX 5090. It predicts 1.6 s whole-body chunks about once per second while a separate SONIC controller decodes at 50 Hz on a Jetson Orin NX; popcorn serving ran fully onboard in 48 of 48 trials.",
+          "source": "https://research.nvidia.com/labs/gear/gr00t-2/assets/gr00t2_whitepaper.pdf"
         }
       ],
       "gaps": [
         "No VLA shown reacting at 50 Hz on Thor",
         "Action chunking can play actions at 50 Hz while the model only sees new force data at 10–20 Hz",
-        "Papers rarely report latency on the deployment device"
+        "Papers rarely report latency on the deployment device",
+        "GR00T 2, the only onboard Thor humanoid result here, reaches 50 Hz only in a separate low-level controller; the VLA itself sees new images about once per second"
       ],
       "metrics": [
         {
@@ -559,6 +564,14 @@
     "Learning-from-failure data loop tooling"
   ],
   "changelog": [
+    {
+      "date": "2026-11-15",
+      "change": "Edge inference: new gap noting that GR00T 2 reaches 50 Hz only through a hierarchical low-level controller, not through the VLA reacting to new sensor data."
+    },
+    {
+      "date": "2026-11-15",
+      "change": "Edge inference: added GR00T 2 Turbo evidence (124 ms per prediction on onboard Jetson AGX Thor, about 1 Hz replanning, 50 Hz from a separate SONIC controller, 48/48 onboard popcorn-serving trials). NVIDIA whitepaper, not peer reviewed. Maturity unchanged (Early): no reaction near 50 Hz from the model itself."
+    },
     {
       "date": "2026-10-04",
       "change": "Scorecard created from paper reviews (GPT-6 Astra, Devol-ONE) and a search of 2025–2026 work per area."
